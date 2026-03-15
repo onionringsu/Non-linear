@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Non-Linear System Solver</title>
+<script src="https://cdn.jsdelivr.net/npm/mathjs@12.4.2/lib/browser/math.js"></script>
+<style>
+body{font-family:Segoe UI,Arial,sans-serif;background:#f5f6f8;margin:0;padding:40px;color:#1f2937}
+.container{max-width:920px;margin:auto}
+.card{background:#fff;border-radius:14px;padding:24px;margin-bottom:18px;box-shadow:0 8px 24px rgba(0,0,0,.08)}
+h1{margin:0 0 10px;font-size:2rem}
+p{margin:0 0 18px;color:#4b5563;line-height:1.5}
+label{display:block;font-weight:600;margin:0 0 6px}
+input{width:100%;padding:12px 14px;border:1px solid #d1d5db;border-radius:10px;font-size:16px;box-sizing:border-box}
+input:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.btnRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+button{padding:12px 16px;background:#2563eb;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer}
+button:hover{background:#1d4ed8}
+button.secondary{background:#e5e7eb;color:#111827}
+button.secondary:hover{background:#d1d5db}
+.answerTitle{font-size:1.25rem;font-weight:700;margin-bottom:10px}
+.solution{font-family:Consolas,monospace;background:#fafafa;border:1px solid #e5e7eb;padding:14px;border-radius:10px;white-space:pre-line;line-height:1.6}
+.stepCard{border:1px solid #e5e7eb;border-radius:10px;padding:14px;margin-top:10px;background:#fbfbfb}
+.stepTitle{font-weight:700;margin-bottom:8px}
+.error{color:#b91c1c;font-weight:600;margin-top:12px}
+details{margin-top:14px}
+summary{cursor:pointer;font-weight:600}
+.note{font-size:.93rem;color:#6b7280;margin-top:8px}
+@media (max-width:700px){body{padding:18px}.row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="card">
+    <h1>Non-Linear System Solver</h1>
+    <p>Enter two equations. This version works best when Equation 1 is linear and Equation 2 is nonlinear, then solves by substitution and shows one clean answer path with checking.</p>
+
+    <div class="row">
+      <div>
+        <label>Equation 1</label>
+        <input id="eq1" value="x + y = 5">
+      </div>
+      <div>
+        <label>Equation 2</label>
+        <input id="eq2" value="3x^2 - 2y^2 = 1/2">
+      </div>
+    </div>
+
+    <div class="btnRow">
+      <button onclick="solveSystem()">Solve</button>
+      <button class="secondary" onclick="clearAll()">Clear</button>
+    </div>
+
+    <div class="note">Best for substitution cases like x + y = 5 with a nonlinear second equation.</div>
+    <div id="error" class="error"></div>
+  </div>
+
+  <div id="resultCard" class="card" style="display:none">
+    <div class="answerTitle">Answer</div>
+    <div id="solutions" class="solution"></div>
+
+    <div class="answerTitle" style="margin-top:18px">Checking</div>
+    <div id="checking" class="solution"></div>
+
+    <details>
+      <summary>Show Steps</summary>
+      <div id="steps"></div>
+    </details>
+  </div>
+</div>
+
+<script>
+function clearAll(){
+  document.getElementById('eq1').value='';
+  document.getElementById('eq2').value='';
+  document.getElementById('error').textContent='';
+  document.getElementById('resultCard').style.display='none';
+}
+
+function formatMath(str){
+  return String(str)
+    .replace(/\^2/g,'²')
+    .replace(/\^3/g,'³')
+    .replace(/sqrt\(([^)]+)\)/g,'√($1)');
+}
+
+function parseSides(eq){
+  const parts=eq.split('=');
+  if(parts.length!==2) throw new Error("Each equation must contain one '=' sign.");
+  return {left:parts[0].trim(), right:parts[1].trim()};
+}
+
+function toZeroExpression(eq){
+  const {left,right}=parseSides(eq);
+  return `(${left}) - (${right})`;
+}
+
+function near(a,b,eps=1e-9){
+  return Math.abs(a-b)<eps;
+}
+
+function linearCoefficients(eq){
+  const expr=toZeroExpression(eq);
+  const compiled=math.compile(expr);
+  const f=(x,y)=>compiled.evaluate({x,y});
+  const c=f(0,0);
+  const ax=f(1,0)-c;
+  const by=f(0,1)-c;
+  const mixed=f(1,1)-c-ax-by;
+  if(Math.abs(mixed)>1e-8) throw new Error('Equation 1 must be linear for this substitution version.');
+  return {a:ax,b:by,c:-c};
+}
+
+function solveEq1ForVariable(eq1){
+  const {a,b,c}=linearCoefficients(eq1);
+  if(Math.abs(a)<1e-10 && Math.abs(b)<1e-10) throw new Error('Equation 1 is not valid.');
+
+  if(Math.abs(a)>=Math.abs(b) && Math.abs(a)>1e-10){
+    const expr=math.simplify(`(${c} - (${b})*y)/(${a})`).toString();
+    return {solvedVar:'x', freeVar:'y', expr};
+  }
+
+  if(Math.abs(b)>1e-10){
+    const expr=math.simplify(`(${c} - (${a})*x)/(${b})`).toString();
+    return {solvedVar:'y', freeVar:'x', expr};
+  }
+
+  throw new Error('Equation 1 cannot be rearranged.');
+}
+
+function substituteExpression(eq2, solvedVar, replacement){
+  const zeroExpr=toZeroExpression(eq2);
+  const replaced=math.parse(zeroExpr).transform(function(node){
+    if(node.isSymbolNode && node.name===solvedVar){
+      return math.parse(`(${replacement})`);
+    }
+    return node;
+  }).toString();
+  return math.simplify(replaced).toString();
+}
+
+function findRoots1D(expr,varName){
+  const compiled=math.compile(expr);
+  const derivative=math.compile(math.derivative(expr,varName).toString());
+  const roots=[];
+  const guesses=[-10,-8,-6,-4,-3,-2,-1,0,1,2,3,4,6,8,10];
+
+  for(const guess of guesses){
+    let v=guess;
+    let ok=false;
+
+    for(let i=0;i<40;i++){
+      let fv,dfv;
+      try{
+        fv=compiled.evaluate({[varName]:v});
+        dfv=derivative.evaluate({[varName]:v});
+      }catch{
+        ok=false;
+        break;
+      }
+
+      if(!isFinite(fv)||!isFinite(dfv)||Math.abs(dfv)<1e-10) break;
+      const next=v-fv/dfv;
+      if(!isFinite(next)) break;
+      if(Math.abs(next-v)<1e-10){
+        v=next;
+        ok=true;
+        break;
+      }
+      v=next;
+    }
+
+    if(ok){
+      const exists=roots.some(r=>Math.abs(r-v)<1e-7);
+      if(!exists) roots.push(v);
+    }
+  }
+
+  return roots.sort((m,n)=>m-n);
+}
+
+function choosePreferredSolution(solutions){
+  const bothPositive=solutions.find(s=>s.x>=0&&s.y>=0);
+  if(bothPositive) return bothPositive;
+  const nonNegativeX=solutions.find(s=>s.x>=0);
+  if(nonNegativeX) return nonNegativeX;
+  return solutions[0];
+}
+
+function solveByGeneralSubstitution(eq1,eq2){
+  const rearranged=solveEq1ForVariable(eq1);
+  const substitutedExpr=substituteExpression(eq2,rearranged.solvedVar,rearranged.expr);
+  const roots=findRoots1D(substitutedExpr,rearranged.freeVar);
+  if(!roots.length) throw new Error('No real solution found from the substitution step.');
+
+  const solutions=roots.map(root=>{
+    const scope={[rearranged.freeVar]:root};
+    const other=math.evaluate(rearranged.expr,scope);
+    return rearranged.solvedVar==='x'
+      ? {x:other,y:root,freeValue:root,solvedValue:other}
+      : {x:root,y:other,freeValue:root,solvedValue:other};
+  }).filter(s=>isFinite(s.x)&&isFinite(s.y));
+
+  if(!solutions.length) throw new Error('No real solution found.');
+
+  const chosen=choosePreferredSolution(solutions);
+  return {
+    mode:'general',
+    eq1Original:eq1,
+    eq2Original:eq2,
+    solvedVar:rearranged.solvedVar,
+    freeVar:rearranged.freeVar,
+    rearranged:rearranged.expr,
+    substitutedLabel:`${substitutedExpr} = 0`,
+    freeValue:chosen.freeValue,
+    solvedValue:chosen.solvedValue,
+    x:chosen.x,
+    y:chosen.y
+  };
+}
+
+function buildSteps(data){
+  const steps=[];
+  steps.push({title:'Step 1', body:formatMath(`${data.eq1Original}\n${data.solvedVar} = ${data.rearranged}`)});
+  steps.push({title:'Step 2', body:formatMath(`${data.eq2Original}\nSubstitute ${data.solvedVar} into Equation 2`) });
+  steps.push({title:'Step 3', body:formatMath(`Simplified equation\n${data.substitutedLabel}`)});
+  steps.push({title:'Step 4', body:formatMath(`Solve for ${data.freeVar}\n${data.freeVar} = ${math.format(data.freeValue,{precision:8})}`)});
+  steps.push({title:'Step 5', body:formatMath(`Substitute back to find ${data.solvedVar}\n${data.solvedVar} = ${math.format(data.solvedValue,{precision:8})}`)});
+  return steps;
+}
+
+function solveSystem(){
+  const eq1=document.getElementById('eq1').value.trim();
+  const eq2=document.getElementById('eq2').value.trim();
+  const error=document.getElementById('error');
+  const resultCard=document.getElementById('resultCard');
+  const solDiv=document.getElementById('solutions');
+  const checkDiv=document.getElementById('checking');
+  const stepsDiv=document.getElementById('steps');
+
+  error.textContent='';
+  resultCard.style.display='none';
+  stepsDiv.innerHTML='';
+
+  try{
+    if(!eq1||!eq2) throw new Error('Please enter both equations.');
+
+    const data=solveByGeneralSubstitution(eq1,eq2);
+    const x=data.x;
+    const y=data.y;
+
+    solDiv.textContent=formatMath(`x = ${math.format(x,{precision:8})}\ny = ${math.format(y,{precision:8})}`);
+
+    const eq1Parts=parseSides(eq1);
+    const eq2Parts=parseSides(eq2);
+    const left1=math.evaluate(eq1Parts.left,{x,y});
+    const right1=math.evaluate(eq1Parts.right,{x,y});
+    const left2=math.evaluate(eq2Parts.left,{x,y});
+    const right2=math.evaluate(eq2Parts.right,{x,y});
+
+    checkDiv.textContent=formatMath(
+      `Equation 1\n${math.format(left1,{precision:8})} = ${math.format(right1,{precision:8})} ${Math.abs(left1-right1)<1e-6?'✓':'✗'}\n\n`+
+      `Equation 2\n${math.format(left2,{precision:8})} = ${math.format(right2,{precision:8})} ${Math.abs(left2-right2)<1e-6?'✓':'✗'}`
+    );
+
+    const steps=buildSteps(data);
+    stepsDiv.innerHTML=steps.map(step=>`<div class="stepCard"><div class="stepTitle">${step.title}</div><div class="solution">${step.body}</div></div>`).join('');
+
+    resultCard.style.display='block';
+  }catch(err){
+    error.textContent=err.message;
+  }
+}
+</script>
+</body>
+</html>
