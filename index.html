@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Non-Linear System Solver</title>
+
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/mathjs@12.4.2/lib/browser/math.js"></script>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="card">
+    <h1>Non-Linear System Solver</h1>
+    <p>Enter any two equations in x and y.</p>
+
+    <div class="topLayout">
+
+      <div class="inputsArea">
+        <div>
+          <label>Equation 1</label>
+          <div class="mathInputWrap">
+            <div class="mathInputDisplay" id="eq1Preview">x² + y² = 5</div>
+            <input id="eq1" class="mathInputReal" value="x^2 + y^2 = 5" autocomplete="off">
+          </div>
+        </div>
+
+        <div style="margin-top:16px;">
+          <label>Equation 2</label>
+          <div class="mathInputWrap">
+            <div class="mathInputDisplay" id="eq2Preview">3x² - 2y² = 1/2</div>
+            <input id="eq2" class="mathInputReal" value="3x^2 - 2y^2 = 1/2" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="btnRow">
+          <button onclick="solveSystem()">Solve</button>
+          <button class="secondary" onclick="clearAll()">Clear</button>
+        </div>
+
+        <div id="error" class="error"></div>
+      </div>
+
+      <div class="keyboardArea">
+        <div class="keyboardCard">
+
+          <div class="keyboardHeader">
+            <div class="keyboardTitle">Math Keyboard</div>
+            <div id="activeInputLabel" class="keyboardHint">Selected: Equation 1</div>
+          </div>
+
+          <div class="keyboardTabs">
+            <button type="button" class="keyboardTab active" onclick="switchKeyboardTab('main', this)">main</button>
+            <button type="button" class="keyboardTab" onclick="switchKeyboardTab('abc', this)">abc</button>
+            <button type="button" class="keyboardTab" onclick="switchKeyboardTab('func', this)">func</button>
+          </div>
+
+          <div id="keyboard-main" class="keyboardPanel active">
+            <div class="keyboardGrid">
+              <button class="keyBtn" onclick="insertText('x')">x</button>
+              <button class="keyBtn" onclick="insertText('y')">y</button>
+              <button class="keyBtn" onclick="insertText('(')">(</button>
+              <button class="keyBtn" onclick="insertText(')')">)</button>
+              <button class="keyBtn" onclick="insertText('=')">=</button>
+
+              <button class="keyBtn" onclick="insertText('7')">7</button>
+              <button class="keyBtn" onclick="insertText('8')">8</button>
+              <button class="keyBtn" onclick="insertText('9')">9</button>
+              <button class="keyBtn" onclick="insertText('+')">+</button>
+              <button class="keyBtn" onclick="insertText('-')">−</button>
+
+              <button class="keyBtn" onclick="insertText('4')">4</button>
+              <button class="keyBtn" onclick="insertText('5')">5</button>
+              <button class="keyBtn" onclick="insertText('6')">6</button>
+              <button class="keyBtn" onclick="insertText('*')">×</button>
+              <button class="keyBtn" onclick="insertText('/')">÷</button>
+
+              <button class="keyBtn" onclick="insertText('1')">1</button>
+              <button class="keyBtn" onclick="insertText('2')">2</button>
+              <button class="keyBtn" onclick="insertText('3')">3</button>
+              <button class="keyBtn" onclick="insertText('.')">.</button>
+              <button class="keyBtn" onclick="insertExponent()">^</button>
+
+              <button class="keyBtn" onclick="insertText('0')">0</button>
+              <button class="keyBtn" onclick="insertText(',')">,</button>
+              <button class="keyBtn" onclick="insertText('1/2')">1/2</button>
+              <button class="keyBtn" onclick="backspaceInput()">⌫</button>
+              <button class="keyBtn secondaryKey" onclick="clearActiveInput()">Clear</button>
+            </div>
+          </div>
+
+          <div id="keyboard-abc" class="keyboardPanel">
+            <div class="keyboardGrid">
+              <button class="keyBtn" onclick="insertText('a')">a</button>
+              <button class="keyBtn" onclick="insertText('b')">b</button>
+              <button class="keyBtn" onclick="insertText('c')">c</button>
+              <button class="keyBtn" onclick="insertText('d')">d</button>
+              <button class="keyBtn" onclick="insertText('e')">e</button>
+
+              <button class="keyBtn" onclick="insertText('f')">f</button>
+              <button class="keyBtn" onclick="insertText('g')">g</button>
+              <button class="keyBtn" onclick="insertText('h')">h</button>
+              <button class="keyBtn" onclick="insertText('i')">i</button>
+              <button class="keyBtn" onclick="insertText('j')">j</button>
+
+              <button class="keyBtn" onclick="insertText('k')">k</button>
+              <button class="keyBtn" onclick="insertText('l')">l</button>
+              <button class="keyBtn" onclick="insertText('m')">m</button>
+              <button class="keyBtn" onclick="insertText('n')">n</button>
+              <button class="keyBtn" onclick="insertText('o')">o</button>
+
+              <button class="keyBtn" onclick="insertText('p')">p</button>
+              <button class="keyBtn" onclick="insertText('q')">q</button>
+              <button class="keyBtn" onclick="insertText('r')">r</button>
+              <button class="keyBtn" onclick="insertText('s')">s</button>
+              <button class="keyBtn" onclick="insertText('t')">t</button>
+
+              <button class="keyBtn" onclick="insertText('u')">u</button>
+              <button class="keyBtn" onclick="insertText('v')">v</button>
+              <button class="keyBtn" onclick="insertText('w')">w</button>
+              <button class="keyBtn" onclick="insertText('z')">z</button>
+              <button class="keyBtn" onclick="backspaceInput()">⌫</button>
+            </div>
+          </div>
+
+          <div id="keyboard-func" class="keyboardPanel">
+            <div class="keyboardGrid">
+              <button class="keyBtn" onclick="insertText('sqrt(')">√</button>
+              <button class="keyBtn" onclick="insertText('sin(')">sin</button>
+              <button class="keyBtn" onclick="insertText('cos(')">cos</button>
+              <button class="keyBtn" onclick="insertText('tan(')">tan</button>
+              <button class="keyBtn" onclick="insertText('abs(')">abs</button>
+
+              <button class="keyBtn" onclick="insertText('log(')">log</button>
+              <button class="keyBtn" onclick="insertText('ln(')">ln</button>
+              <button class="keyBtn" onclick="insertText('pi')">π</button>
+              <button class="keyBtn" onclick="insertText('^')">^</button>
+              <button class="keyBtn" onclick="insertText('!')">!</button>
+
+              <button class="keyBtn" onclick="insertText('(')">(</button>
+              <button class="keyBtn" onclick="insertText(')')">)</button>
+              <button class="keyBtn" onclick="insertText('/')">÷</button>
+              <button class="keyBtn" onclick="insertText('*')">×</button>
+              <button class="keyBtn" onclick="backspaceInput()">⌫</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="resultCard" class="card" style="display:none">
+    <div class="answerTitle">Answer</div>
+    <div id="solutions" class="solution"></div>
+
+    <div class="answerTitle">Checking</div>
+    <div id="checking" class="solution"></div>
+
+    <div class="answerTitle" style="margin-top:18px">Steps</div>
+    <div id="steps"></div>
+  </div>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>

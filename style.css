@@ -1,0 +1,538 @@
+:root{
+  --primary:#ec4899;        /* main pink */
+  --primary-dark:#db2777;   /* hover pink */
+  --primary-light:#fce7f3;  /* soft background */
+  --accent:#f472b6;
+  --border:#f3c6db;
+  --bg:#e770b1; /*nicobg*/
+}
+
+body{
+  font-family:Segoe UI, Arial, sans-serif;
+  background:var(--bg);
+  margin:0;
+  padding:32px;
+  color:#1f2937;
+}
+
+.container{
+  max-width:1200px;
+  width:95%;
+  margin:auto;
+}
+
+button{
+  background:linear-gradient(135deg, #ec4899, #f472b6);
+}
+/* 2nd Color */
+.card{
+  background:#ff9ad3;
+  border-radius:16px;
+  padding:28px;
+  margin-bottom:20px;
+  box-shadow:0 10px 28px rgba(0,0,0,.08);
+  border:1px solid #f3c6db;
+}
+
+h1{
+  margin:0 0 10px;
+  font-size:2rem;
+}
+
+p{
+  margin:0 0 18px;
+  color:#4b5563;
+  line-height:1.6;
+}
+
+label{
+  display:block;
+  font-weight:600;
+  margin-bottom:8px;
+}
+
+input{
+  width:100%;
+  padding:13px 14px;
+  border-radius:12px;
+  border:1px solid #d1d5db;
+  box-sizing:border-box;
+  font-size:15px;
+  transition:border-color .2s, box-shadow .2s;
+}
+
+input:focus{
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(236,72,153,.18);
+}
+
+.activeMathInput{
+  border-color:#2563eb;
+  box-shadow:0 0 0 3px rgba(37,99,235,.12);
+}
+
+.row{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));
+  gap:16px;
+}
+
+.btnRow{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:16px;
+  align-items:center;
+}
+
+button{
+  padding:11px 18px;
+  border:none;
+  border-radius:12px;
+  background:var(--primary);
+  color:white;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:82px;
+  box-sizing:border-box;
+  font-weight:600;
+  font-size:14px;
+  transition:transform .15s, background .2s;
+}
+
+button:hover{
+  background:var(--primary-dark);
+  transform:translateY(-1px);
+}
+
+button:active{
+  transform:translateY(0);
+}
+
+.secondary{
+  background:#fbcfe8;
+  color:#831843;
+}
+
+.secondary:hover{
+  background:#d1d5db;
+}
+
+.answerTitle{
+  font-weight:700;
+  font-size:18px;
+  margin-bottom:10px;
+}
+
+.solution{
+  background:#fff5f9;
+  padding:14px 16px;
+  border-radius:12px;
+  white-space:pre-line;
+  line-height:1.8;
+  overflow-x:auto;
+  border:1px solid #ececec;
+}
+ /*3rd Color*/
+.stepCard{
+  border:3px solid #f9a8d4;
+  border-radius:14px;
+  padding:0;
+  margin-top:16px;
+  background:#fce7f3;
+  overflow:hidden;
+  transition:transform .15s ease, box-shadow .2s ease;
+}
+
+.stepCard:hover{
+  transform:translateY(-2px);
+}
+
+.stepCard[open]{
+  border-color:#dbe2ea;
+  box-shadow:0 6px 18px rgba(0,0,0,.06);
+}
+
+.stepCard summary::after{
+  content:"▼";
+  color:#be185d;
+  position:absolute;
+  right:16px;
+  top:50%;
+  transform:translateY(-50%) rotate(0deg);
+  font-size:12px;
+  transition:transform .25s ease;
+}
+
+.stepCard[open] summary::after{
+  transform:translateY(-50%) rotate(180deg);
+}
+
+.stepCard summary:hover{
+  background:#fbcfe8;
+}
+
+.stepCard[open]{
+  background:#f9a8d4;
+  border-color:#ec4899;
+  box-shadow:0 6px 16px rgba(236,72,153,.18);
+}
+
+.stepCard .solution{
+  border:none;
+  border-radius:0;
+  background:#fff5f9;  /* soft pink */
+  padding:18px 20px;
+}
+
+.stepCard[open] .solution{
+  animation:stepFade .25s ease;
+}
+
+.stepCard summary{
+  cursor:pointer;
+  list-style:none;
+  padding:18px 18px;
+  font-weight:600;
+  background:#fbcfe8;
+  line-height:1.5;
+  position:relative;
+  padding-right:40px;
+  color:#831843;
+}
+
+.stepCard[open] .solution{
+  opacity:1;
+  transform:translateY(0);
+}
+
+.error{
+  color:#b91c1c;
+  font-weight:600;
+  margin-top:14px;
+}
+
+/* KEYBOARD */
+.keyboardCard{
+  margin-top:18px;
+  border:1px solid #e5e7eb;
+  border-radius:16px;
+  padding:10px;
+  background:#fff0f6;
+  position:sticky;
+  top:20px;
+}
+
+
+.keyboardHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:12px;
+  flex-wrap:wrap;
+}
+
+.keyboardTabs{
+  display:flex;
+  gap:6px;
+  margin-bottom:10px;
+  flex-wrap:wrap;
+}
+
+.keyboardTab{
+  background:#e5e7eb;
+  color:#111827;
+  border:none;
+  border-radius:10px;
+  padding:5px 10px;
+  min-width:70px;
+  font-weight:600;
+  font-size:12px;
+}
+
+.keyboardTab:hover{
+  background:#dbe2ea;
+}
+
+.keyboardTab.active{
+  background:var(--primary);
+  color:#fff;
+}
+
+.keyboardPanel{
+  display:none;
+  opacity:0;
+  transform:translateY(6px);
+  pointer-events:none;
+}
+
+.keyboardPanel.active{
+  display:block;
+  opacity:1;
+  transform:translateY(0);
+  pointer-events:auto;
+  animation:panelFade .18s ease;
+}
+
+.keyboardTitle{
+  font-weight:700;
+  font-size:16px;
+}
+
+.keyboardHint{
+  color:#4b5563;
+  font-size:14px;
+}
+
+.keyboardGrid{
+  display:grid;
+  grid-template-columns:repeat(5, minmax(0, 1fr));
+  gap:8px;
+}
+
+.keyBtn{
+  background:#ffffff;
+  color:#111827;
+  border:1px solid #d1d5db;
+  border-radius:12px;
+  min-width:0;
+  width:100%;
+  padding:12px 8px;
+  font-size:15px;
+  font-weight:600;
+  box-shadow:0 1px 2px rgba(0,0,0,.04);
+}
+
+.keyBtn:hover{
+  background:var(--primary-light);
+  border-color:var(--accent);
+}
+
+.keyBtn:active{
+  transform:scale(.98);
+}
+
+.secondaryKey{
+  background:#e5e7eb;
+}
+
+.secondaryKey:hover{
+  background:#dbe2ea;
+}
+
+@media (max-width:700px){
+  body{
+    padding:18px;
+  }
+
+  .card{
+    padding:20px;
+  }
+
+  h1{
+    font-size:1.6rem;
+  }
+
+  .keyboardGrid{
+    grid-template-columns:repeat(4, minmax(0, 1fr));
+  }
+}
+
+#steps{
+  margin-top:18px;
+}
+
+#steps .stepCard:first-child{
+  margin-top:0;
+}
+
+.stepCard .solution{
+  will-change: opacity, transform;
+}
+
+@keyframes stepFade{
+  from{
+    opacity:0;
+    transform:translateY(-10px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+.layoutRow{
+  display:flex;
+  gap:20px;
+  align-items:flex-start;
+}
+
+.leftPanel{
+  flex:1;
+  min-width:300px;
+}
+
+.rightPanel{
+  width:320px;
+  flex-shrink:0;
+}
+
+/* mobile */
+@media (max-width:900px){
+  .layoutRow{
+    flex-direction:column;
+  }
+
+  .rightPanel{
+    width:100%;
+  }
+}
+
+.mathInputWrap{
+  position:relative;
+  width:100%;
+}
+
+.mathInputDisplay{
+  width:100%;
+  min-height:52px;
+  padding:13px 14px;
+  border:1px solid #d1d5db;
+  border-radius:12px;
+  box-sizing:border-box;
+  font-size:20px;
+  line-height:1.5;
+  background:#fff0f6;
+  color:#111827;
+  word-break:break-word;
+  white-space:pre-wrap;
+  pointer-events:none;
+}
+
+.mathInputReal{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  padding:13px 14px;
+  border:1px solid transparent;
+  border-radius:12px;
+  box-sizing:border-box;
+  background:transparent;
+  color:transparent;
+  caret-color:#111827;
+  font-size:20px;
+  line-height:1.5;
+}
+
+.mathInputReal:focus{
+  outline:none;
+}
+
+.mathInputWrap:focus-within .mathInputDisplay{
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(236,72,153,.18);
+}
+
+.topLayout{
+  display:flex;
+  gap:20px;
+  align-items:flex-start;
+}
+
+.inputsArea{
+  flex:1;
+}
+
+.keyboardArea{
+  width:300px;
+  flex-shrink:0;
+}
+
+.mathInputWrap{
+  transition:transform .18s ease;
+}
+
+.mathInputWrap:focus-within{
+  transform:translateY(-1px);
+}
+
+.mathInputDisplay{
+  transition:border-color .2s, box-shadow .2s, background .2s;
+}
+
+.mathInputWrap:focus-within .mathInputDisplay{
+  background:#fff0f6;
+}
+
+.keyboardCard{
+  transition:box-shadow .25s ease, transform .25s ease;
+}
+
+.keyboardCard:hover{
+  box-shadow:0 12px 28px rgba(0,0,0,.10);
+}
+
+.keyBtn{
+  transition:transform .12s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+.keyBtn:hover{
+  transform:translateY(-1px);
+  box-shadow:0 4px 10px rgba(37,99,235,.10);
+}
+
+.keyBtn:active{
+  transform:scale(.97);
+}
+
+.keyboardPanel{
+  opacity:0;
+  transform:translateY(6px);
+  pointer-events:none;
+}
+
+.keyboardPanel.active{
+  display:block;
+  opacity:1;
+  transform:translateY(0);
+  pointer-events:auto;
+  animation:panelFade .18s ease;
+}
+
+@keyframes panelFade{
+  from{
+    opacity:0;
+    transform:translateY(6px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+.btnRow button{
+  transition:transform .15s ease, box-shadow .18s ease, background .2s ease;
+}
+
+.btnRow button:hover{
+  box-shadow:0 6px 14px rgba(37,99,235,.14);
+}
+
+.solution{
+  animation:fadeInUp .22s ease;
+}
+
+@keyframes fadeInUp{
+  from{
+    opacity:0;
+    transform:translateY(8px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
